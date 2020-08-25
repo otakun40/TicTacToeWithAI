@@ -4,205 +4,87 @@ import java.util.Scanner;
 
 public class Game {
 
-    Board board = new Board();
+    boolean run;
+    Board board;
+    Player player1;
+    Player player2;
 
-    class Board {
 
-        private int movesCounter;
+    public Game() {
+        run  = true;
+        board = new Board();
+        initiatePlayers();
+    }
 
-        private Side side;
+    void play(Board board) {
+        while (run) {
+            player1.move();
 
-        final private int[] boardArray = new int[9];
-
-        public Board() {
-            this.side = Side.X;
-            movesCounter = 0;
-            Arrays.fill(boardArray, ' ');
-        }
-
-        public void print() {
-            System.out.println("---------");
-            System.out.printf("| %s %s %s |\n", boardArray[0], boardArray[1], boardArray[2]);
-            System.out.printf("| %s %s %s |\n", boardArray[3], boardArray[4], boardArray[5]);
-            System.out.printf("| %s %s %s |\n", boardArray[6], boardArray[7], boardArray[8]);
-            System.out.println("---------");
-        }
-
-        public int inputCoordinates() {
-            Scanner sc = new Scanner(System.in);
-            boolean legalInput = false;
-            int coordinate = -1;
-            int x;
-            int y;
-            while (!legalInput) {
-                try {
-                    System.out.print("Enter the coordinates: ");
-                    String[] xy = sc.nextLine().trim().split(" ");
-
-                    if (xy.length != 2) {
-                        System.out.println("You should enter two numbers!");
-                        continue;
-                    }
-
-                    x = Integer.parseInt(xy[0]);
-                    y = Integer.parseInt(xy[1]);
-                } catch (NumberFormatException e) {
-                    System.out.println("You should enter numbers!");
-                    continue;
-                }
-
-                if (x < 0 || x > 3 || y < 1 || y > 3) {
-                    System.out.println("Coordinates should be from 1 to 3!");
-                    continue;
-                }
-                if (x == 1 && y == 1) {
-                    coordinate = 6;
-                }   else if (x == 1 && y == 2) {
-                    coordinate = 3;
-                }   else if (x == 1 && y == 3) {
-                    coordinate = 0;
-                }   else if (x == 2 && y == 1) {
-                    coordinate = 7;
-                }   else if (x == 2 && y == 2) {
-                    coordinate = 4;
-                }   else if (x == 2 && y == 3) {
-                    coordinate = 1;
-                }   else if (x == 3 && y == 1) {
-                    coordinate = 8;
-                }   else if (x == 3 && y == 2) {
-                    coordinate = 5;
-                }   else if (x == 3 && y == 3) {
-                    coordinate = 2;
-                }
-
-                legalInput = true;
+            if (board.currentGameResult().equals("Draw") && board.getMovesCounter() == 9) {
+                System.out.println("Draw");
+                board = new Board();
             }
-            return coordinate;
-        }
 
-        public boolean isPlayerWin(Player player) {
-            char ch = side.getSymbol();
-            if ((boardArray[0] == ch && boardArray[1] == ch && boardArray[2] == ch) ||
-                    (boardArray[3] == ch && boardArray[4] == ch && boardArray[5] == ch) ||
-                    (boardArray[6] == ch && boardArray[7] == ch && boardArray[8] == ch) ||
-                    (boardArray[0] == ch && boardArray[3] == ch && boardArray[6] == ch) ||
-                    (boardArray[1] == ch && boardArray[4] == ch && boardArray[7] == ch) ||
-                    (boardArray[2] == ch && boardArray[5] == ch && boardArray[8] == ch) ||
-                    (boardArray[0] == ch && boardArray[4] == ch && boardArray[8] == ch) ||
-                    (boardArray[2] == ch && boardArray[4] == ch && boardArray[6] == ch)
-            )   {
-                return true;
+        }
+    }
+
+    void initiatePlayers() {
+        Scanner scanner = new Scanner(System.in);
+
+        while (true) {
+            System.out.print("Input command: ");
+            String[] input = scanner.nextLine().trim().split(" ");
+
+            if (input.length == 1 && "exit".equals(input[0])) {
+            }
+
+            if (input.length != 3) {
+                System.out.println("Bad parameters!");
+                continue;
+            }   else if ((!"human".equals(input[1]) && !"easy".equals(input[1]) && !"medium".equals(input[1]) &&
+                        !"hard".equals(input[1])) || (!"human".equals(input[2]) && !"easy".equals(input[2]) &&
+                        !"medium".equals(input[2]) && !"hard".equals(input[2]))) {
+                System.out.println("Bad parameters!");
             }   else {
-                return false;
-            }
-        }
-
-        public int[] getBoardArray() {
-            return boardArray.clone();
-        }
-
-        public Side getSide() {
-            return side;
-        }
-
-        public boolean isCellEmpty(int coordinate) {
-            if (boardArray[coordinate] == ' ') {
-                return true;
-            }   else {
-                return false;
-            }
-        }
-
-        public void setCell(int coordinate, Side side) {
-            boardArray[coordinate] = side.getSymbol();
-        }
-    }
-
-    abstract class Player {
-
-        final protected Side side;
-
-        public Player(Side side) {
-            this.side = side;
-        }
-
-        abstract void move();
-    }
-
-    class Human extends Player {
-
-        public Human(Side side) {
-            super(side);
-        }
-
-        @Override
-        void move() {
-            int c;
-            while (true) {
-                c = board.inputCoordinates();
-                if (board.isCellEmpty(c)) {
-                    board.setCell(c, side);
-                    break;
-                }   else System.out.println("This cell is occupied! Choose another one!");
-            }
-        }
-    }
-
-    class EasyAI extends Player {
-
-        public EasyAI(Side side) {
-            super(side);
-        }
-
-        @Override
-        void move() {
-            Random random = new Random();
-            while (true) {
-                int c = random.nextInt(9);
-                if (board.isCellEmpty(c)) {
-                    board.setCell(c, side);
-                    break;
+                switch (input[1]) {
+                    case "user":
+                        player1 = new Human(board, Side.X);
+                        break;
+                    case "easy":
+                        player1 = new EasyAI(board, Side.X);
+                        break;
+                    case "medium":
+                        player1 = new MediumAI(board, Side.X);
+                        break;
+                    case "hard":
+                        player1 = new HardAI(board, Side.X);
+                    default:break;
+                }
+                switch (input[2]) {
+                    case "user":
+                        player2 = new Human(board, Side.O);
+                        break;
+                    case "easy":
+                        player2 = new EasyAI(board, Side.O);
+                        break;
+                    case "medium":
+                        player2 = new MediumAI(board, Side.O);
+                        break;
+                    case "hard":
+                        player2 = new HardAI(board, Side.O);
+                    default:break;
                 }
             }
         }
     }
 
-    class MediumAI extends Player{
-
-        public MediumAI(Side side) {
-            super(side);
-        }
-
-        @Override
-        void move() {
-
-        }
+    public Player getPlayer1() {
+        return player1;
     }
 
-    class HardAI extends Player{
-
-        public HardAI(Side side) {
-            super(side);
-        }
-
-        @Override
-        void move() {
-
-        }
+    public Player getPlayer2() {
+        return player2;
     }
 
-    enum Side {
-        X('x'),
-        O('o');
 
-        private char symbol;
-
-        Side(char o) {
-            this.symbol = symbol;
-        }
-
-        public char getSymbol() {
-            return symbol;
-        }
-    }
 }

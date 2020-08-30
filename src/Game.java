@@ -1,90 +1,133 @@
-import java.util.Arrays;
-import java.util.Random;
 import java.util.Scanner;
 
 public class Game {
 
-    boolean run;
-    Board board;
-    Player player1;
-    Player player2;
+    private boolean run;
+    private Player player1;
+    private Player player2;
+    private final Board board;
+    private int movesCounter;
 
 
     public Game() {
         run  = true;
         board = new Board();
-        initiatePlayers();
+        initializePlayers();
+        movesCounter = 0;
     }
 
-    void play(Board board) {
-        while (run) {
-            player1.move();
+    public void play() {
 
-            if (board.currentGameResult().equals("Draw") && board.getMovesCounter() == 9) {
-                System.out.println("Draw");
-                board = new Board();
+        String gameResult;
+        board.print();
+
+        while (run) {
+            if (board.getCurrentTurn() == Side.X) {
+                player1.move(board);
+            } else {
+                player2.move(board);
             }
 
+            gameResult = currentGameResult();
+
+            board.nextTurn();
+
+            movesCounter++;
+
+            board.print();
+
+            if ("No one".equals(gameResult) && movesCounter == 9) {
+                System.out.println("Draw\n");
+                return;
+            }   else if (!"No one".equals(gameResult)){
+                System.out.println(gameResult + "\n");
+                return;
+            }
         }
     }
 
-    void initiatePlayers() {
+    public void initializePlayers() {
         Scanner scanner = new Scanner(System.in);
 
         while (true) {
             System.out.print("Input command: ");
             String[] input = scanner.nextLine().trim().split(" ");
 
-            if (input.length == 1 && "exit".equals(input[0])) {
+            if (input[0].equals("exit")) {
+                run = false;
+                return;
             }
 
-            if (input.length != 3) {
-                System.out.println("Bad parameters!");
-                continue;
-            }   else if ((!"human".equals(input[1]) && !"easy".equals(input[1]) && !"medium".equals(input[1]) &&
-                        !"hard".equals(input[1])) || (!"human".equals(input[2]) && !"easy".equals(input[2]) &&
-                        !"medium".equals(input[2]) && !"hard".equals(input[2]))) {
-                System.out.println("Bad parameters!");
-            }   else {
-                switch (input[1]) {
+            for (int i = 1; i < input.length; i++) {
+                switch (input[i]) {
                     case "user":
-                        player1 = new Human(board, Side.X);
+                        if (i == 1) {
+                            player1 = new Human(Side.X);
+                        } else {
+                            player2 = new Human(Side.O);
+                        }
                         break;
                     case "easy":
-                        player1 = new EasyAI(board, Side.X);
+                        if (i == 1) {
+                            player1 = new EasyAI(Side.X);
+                        } else {
+                            player2 = new EasyAI(Side.O);
+                        }
                         break;
                     case "medium":
-                        player1 = new MediumAI(board, Side.X);
+                        if (i == 1) {
+                            player1 = new MediumAI(Side.X);
+                        } else {
+                            player2 = new MediumAI(Side.O);
+                        }
                         break;
                     case "hard":
-                        player1 = new HardAI(board, Side.X);
-                    default:break;
+                        if (i == 1) {
+                            player1 = new HardAI(Side.X);
+                        } else {
+                            player2 = new HardAI(Side.O);
+                        }
+                        break;
+                    default:
+                        System.out.println("Bad parameters!");
+                        break;
                 }
-                switch (input[2]) {
-                    case "user":
-                        player2 = new Human(board, Side.O);
-                        break;
-                    case "easy":
-                        player2 = new EasyAI(board, Side.O);
-                        break;
-                    case "medium":
-                        player2 = new MediumAI(board, Side.O);
-                        break;
-                    case "hard":
-                        player2 = new HardAI(board, Side.O);
-                    default:break;
+                if (i == 2) {
+                    return;
                 }
             }
         }
     }
 
-    public Player getPlayer1() {
-        return player1;
+    public String currentGameResult() {
+        if (isPlayerWin(player1) || isPlayerWin(player2)) {
+            return String.format("%c wins\n", board.getCurrentTurn().getSymbol());
+        } else {
+            return "No one";
+        }
     }
 
-    public Player getPlayer2() {
-        return player2;
+    public boolean isPlayerWin(Player player) {
+
+        char ch = player.getPlayerSide().getSymbol();
+
+        int counter = 0;
+
+        for (int i = 0; i < board.getCheckLines().length; i++) {
+            for (int j = 0; j < board.getCheckLines()[i].length; j++) {
+                if (board.getField()[board.getCheckLines()[i][j]] == ch) {
+                    counter++;
+                }
+                if (counter == 3) {
+                    return true;
+                }
+            }
+            counter = 0;
+        }
+        return false;
     }
 
-
+    public boolean isRun() {
+        return run;
+    }
 }

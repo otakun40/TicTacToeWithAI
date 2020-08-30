@@ -2,38 +2,27 @@ import java.util.Random;
 
 public abstract class Player {
 
-    final protected Board board;
-
     final protected Side playerSide;
 
-    final protected int[][] checkLines = {
-            {0, 3, 6},
-            {1, 4, 7},
-            {2, 5, 8},
-            {0, 1, 2},
-            {3, 4, 5},
-            {6, 7, 8},
-            {0, 4, 8},
-            {2, 4, 6}
-    };
-
-    public Player(Board board, Side playerSide) {
-        this.board = board;
+    public Player(Side playerSide) {
         this.playerSide = playerSide;
     }
 
+    abstract void move(Board board);
 
-    abstract void move();
+    public Side getPlayerSide() {
+        return playerSide;
+    }
 }
 
 class Human extends Player {
 
-    public Human(Board board, Side playerSide) {
-        super(board, playerSide);
+    public Human(Side playerSide) {
+        super(playerSide);
     }
 
     @Override
-    void move() {
+    void move(Board board) {
         int c;
         while (true) {
             c = board.inputCoordinates();
@@ -47,12 +36,12 @@ class Human extends Player {
 
 class EasyAI extends Player {
 
-    public EasyAI(Board board, Side playerSide) {
-        super(board, playerSide);
+    public EasyAI(Side playerSide) {
+        super(playerSide);
     }
 
     @Override
-    void move() {
+    void move(Board board) {
         Random random = new Random();
         while (true) {
             int c = random.nextInt(9);
@@ -69,15 +58,15 @@ class MediumAI extends Player{
 
     Side opponentSide = playerSide == Side.X? Side.O : Side.X;
 
-    public MediumAI(Board board, Side playerSide) {
-        super(board, playerSide);
+    public MediumAI(Side playerSide) {
+        super(playerSide);
     }
 
 
     @Override
-    public void move() {
-        int cellToPlayerWin = cellToWin(playerSide);
-        int cellToOpponentWin = cellToWin(opponentSide);
+    public void move(Board board) {
+        int cellToPlayerWin = cellToWin(board, playerSide);
+        int cellToOpponentWin = cellToWin(board, opponentSide);
 
         if (cellToPlayerWin != -1) {
             board.setCell(cellToPlayerWin, playerSide);
@@ -85,7 +74,7 @@ class MediumAI extends Player{
             return;
 
         }   else if (cellToOpponentWin != -1) {
-            board.setCell(cellToOpponentWin, opponentSide);
+            board.setCell(cellToOpponentWin, playerSide);
             System.out.println("Making move level \"medium\"");
             return;
 
@@ -102,20 +91,20 @@ class MediumAI extends Player{
         }
     }
 
-    private int cellToWin(Side playerSide) {
+    public int cellToWin(Board board, Side playerSide) {
         char ch = playerSide.getSymbol();
         int counter = 0;
         int emptyCellPos = -1;
 
-        for (int i = 0; i < board.checkLines.length; i++) {
-            for (int j = 0; j < board.checkLines[i].length; j++) {
+        for (int i = 0; i < board.getCheckLines().length; i++) {
+            for (int j = 0; j < board.getCheckLines()[i].length; j++) {
 
-                if (board.getBoardArray()[board.checkLines[i][j]] == ch) {
+                if (board.getField()[board.getCheckLines()[i][j]] == ch) {
                     counter++;
                 }
 
-                if (board.getBoardArray()[board.checkLines[i][j]] == ' ') {
-                    emptyCellPos = board.checkLines[i][j];
+                if (board.getField()[board.getCheckLines()[i][j]] == ' ') {
+                    emptyCellPos = board.getCheckLines()[i][j];
                 }
 
                 if (j == 2 && counter == 2 && emptyCellPos != -1) {
@@ -131,11 +120,11 @@ class MediumAI extends Player{
 
 class HardAI extends Player {
 
-    public HardAI(Board board, Side playerSide) {
-        super(board, playerSide);
+    public HardAI(Side playerSide) {
+        super(playerSide);
     }
 
     @Override
-    void move() {
+    void move(Board board) {
     }
 }

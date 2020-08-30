@@ -3,9 +3,9 @@ import java.util.Scanner;
 
 public class Board {
 
-    private int movesCounter;
+    private Side turn;
 
-    private Side side;
+    final private char[] field = new char[9];
 
     final int[][] checkLines = {
             {0, 3, 6},
@@ -18,20 +18,9 @@ public class Board {
             {2, 4, 6}
     };
 
-    final private int[] boardArray = new int[9];
-
     public Board() {
-        this.side = Side.X;
-        movesCounter = 0;
-        Arrays.fill(boardArray, ' ');
-    }
-
-    public int getMovesCounter() {
-        return movesCounter;
-    }
-
-    public Side getSide() {
-        return side;
+        this.turn = Side.X;
+        Arrays.fill(field, ' ');
     }
 
     public int[][] getCheckLines() {
@@ -40,9 +29,9 @@ public class Board {
 
     public void print() {
         System.out.println("---------");
-        System.out.printf("| %s %s %s |\n", boardArray[0], boardArray[1], boardArray[2]);
-        System.out.printf("| %s %s %s |\n", boardArray[3], boardArray[4], boardArray[5]);
-        System.out.printf("| %s %s %s |\n", boardArray[6], boardArray[7], boardArray[8]);
+        System.out.printf("| %s %s %s |\n", field[0], field[1], field[2]);
+        System.out.printf("| %s %s %s |\n", field[3], field[4], field[5]);
+        System.out.printf("| %s %s %s |\n", field[6], field[7], field[8]);
         System.out.println("---------");
     }
 
@@ -69,7 +58,7 @@ public class Board {
                 continue;
             }
 
-            if (x < 0 || x > 3 || y < 1 || y > 3) {
+            if (x < 1 || x > 3 || y < 1 || y > 3) {
                 System.out.println("Coordinates should be from 1 to 3!");
                 continue;
             }
@@ -92,55 +81,28 @@ public class Board {
             }   else if (x == 3 && y == 3) {
                 coordinate = 2;
             }
-
             legalInput = true;
         }
         return coordinate;
     }
 
-    public boolean isPlayerWin(Player player) {
-
-        char ch = side.getSymbol();
-
-        int counter = 0;
-
-        for (int i = 0; i < checkLines.length; i++) {
-            for (int j = 0; j < checkLines[i].length; j++) {
-                if (boardArray[checkLines[i][j]] == ch) {
-                    counter++;
-                }
-                if (counter == 3) {
-                    return true;
-                }
-            }
-            counter = 0;
-        }
-        return false;
+    public char[] getField() {
+        return field;
     }
 
-    public int[] getBoardArray() {
-        return boardArray;
-    }
-
-    public Side getCurrentSide() {
-        return side;
-    }
-
-    public String currentGameResult() {
-        if (isPlayerWin(player1) || isPlayerWin(player2)) {
-            return String.format("%c wins\n", side.getSymbol());
-        }   else return "Draw";
+    public Side getCurrentTurn() {
+        return turn;
     }
 
     public boolean isCellEmpty(int coordinate) {
-        if (boardArray[coordinate] == ' ') {
-            return true;
-        }   else {
-            return false;
-        }
+        return field[coordinate] == ' ';
     }
 
     public void setCell(int coordinate, Side side) {
-        boardArray[coordinate] = side.getSymbol();
+        field[coordinate] = side.getSymbol();
+    }
+
+    public void nextTurn() {
+        turn = turn == Side.X ? Side.O : Side.X;
     }
 }
